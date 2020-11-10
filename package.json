@@ -1,0 +1,14 @@
+{
+  "name": "extract_frame",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "start": "node extract-frame"
+  },
+  "dependencies": {
+    "ffmpeg-extract-frames": "^2.0.2",
+    "ffmpeg-probe": "^1.0.6",
+    "fluent-ffmpeg": "^2.1.2"
+  }
+}
