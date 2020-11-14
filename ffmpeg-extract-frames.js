@@ -62,7 +62,8 @@ module.exports = async (opts) => {
 
       cmd.outputOptions([
         '-vsync', 'vfr',
-        '-vf', `scale=${scale || '-1:500'}`,
+        // '-vf', `scale=${scale || '-1:500'}`,
+        '-filter:v', `select=not(mod(n\\,${nthFrame})),scale=${scale || '-1:500'}`,
         '-vframes', `${numFrames}`
       ])
     }

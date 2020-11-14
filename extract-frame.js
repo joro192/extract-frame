@@ -2,14 +2,14 @@ const extractFrames = require("./ffmpeg-extract-frames");
 const { readdirSync } = require("fs");
 var path = require("path");
 var fs = require("fs");
-const ffmpeg = require('fluent-ffmpeg');
-const async = require('async');
+const ffmpeg = require("fluent-ffmpeg");
+const async = require("async");
 
-const source = path.join(__dirname, 'source');
-const target = path.join(__dirname, 'target');
+const source = path.join(__dirname, "source");
+const target = path.join(__dirname, "target");
 
 const getDirectories = async (source) => {
-  console.log('Start extract frames ...')
+  console.log("Start extract frames ...");
 
   const folder = [];
   readdirSync(source, { withFileTypes: true })
@@ -31,8 +31,9 @@ const getDirectories = async (source) => {
 
           let input = `${source}/${folder[i]}/${file.name}`;
           let output = `${target}/${folder[i]}/${fileName}-%d.png`;
-          const cmd = ffmpeg(input)
-            .on('start', (cmd) => { })
+          const cmd = ffmpeg(input).on("start", (cmd) => {
+            console.log(cmd);
+          });
 
           options.push({
             input,
@@ -40,8 +41,8 @@ const getDirectories = async (source) => {
             numFrames: 100,
             cmd,
             fileName,
-            scale: '-1:500'
-          })
+            scale: "-1:500",
+          });
         }
         return;
       });
@@ -50,34 +51,40 @@ const getDirectories = async (source) => {
   var queue = async.queue(function ({ cmd, output }, callback, error) {
     setTimeout(function () {
       cmd
-        .on('end', () => callback())
-        .on('error', (err) => error())
+        .on("end", () => callback())
+        .on("error", (err) => console.error(err))
         .output(output)
         .run();
     }, 500);
   }, 1);
 
-
   // assign a callback
-  queue.drain = (() => { console.log('All items have been processed'); })
+  queue.drain = () => {
+    console.log("All items have been processed");
+  };
 
   let count = 0;
 
-  await Promise.all(options.map(async option => {
-    let output = option.output;
+  await Promise.all(
+    options.map(async (option) => {
+      let output = option.output;
 
-    let cmd = await extractFrames(option);
+      let cmd = await extractFrames(option);
 
-    queue.push(
-      { cmd, output },
-      () => {
-        count++;
-        process.stdout.write(`Extracting ${count}/${options.length} video complete... \r`);
-      },
-      () => {
-        console.log(`Something wrong with video ${fileName}`)
-      });
-  }))
+      queue.push(
+        { cmd, output },
+        () => {
+          count++;
+          process.stdout.write(
+            `Extracting ${count}/${options.length} video complete... \r`
+          );
+        },
+        () => {
+          console.log(`Something wrong with video ${options.fileName}`);
+        }
+      );
+    })
+  );
 };
 
 getDirectories(source);
